@@ -24,12 +24,31 @@ def softmax_loss_naive(W, X, y, reg):
   dW = np.zeros_like(W)
 
   #############################################################################
-  # TODO: Compute the softmax loss and its gradient using explicit loops.     #
   # Store the loss in loss and the gradient in dW. If you are not careful     #
   # here, it is easy to run into numeric instability. Don't forget the        #
   # regularization!                                                           #
   #############################################################################
-  pass
+  num_train = X.shape[0]
+  num_classes = W.shape[1]
+
+  for i in xrange(num_train):
+    scores = X[i].dot(W)
+    scores -= np.max(scores)
+    row_exp_sum = np.sum(np.exp(scores))
+
+    loss += -1 * np.log(np.exp(scores[y[i]]) / row_exp_sum)
+
+    for j in xrange(num_classes):
+      if y[i] == j:
+        dW[:, j] += -(1 - (np.exp(scores[j]) / row_exp_sum)) * X[i]
+      else:
+        dW[:, j] += -(0 - (np.exp(scores[j]) / row_exp_sum)) * X[i]
+
+  loss /= num_train
+  dW /= num_train
+
+  loss += reg * np.sum(W * W)
+  dW += 2 * reg * W
   #############################################################################
   #                          END OF YOUR CODE                                 #
   #############################################################################
@@ -45,18 +64,35 @@ def softmax_loss_vectorized(W, X, y, reg):
   """
   # Initialize the loss and gradient to zero.
   loss = 0.0
-  dW = np.zeros_like(W)
 
   #############################################################################
-  # TODO: Compute the softmax loss and its gradient using no explicit loops.  #
   # Store the loss in loss and the gradient in dW. If you are not careful     #
   # here, it is easy to run into numeric instability. Don't forget the        #
   # regularization!                                                           #
   #############################################################################
-  pass
+  num_train = X.shape[0]
+  num_classes = W.shape[1]
+
+  scores = X.dot(W)
+  scores -= np.max(scores, axis=1).reshape(-1, 1)
+
+  exps = np.exp(scores)
+  row_exp_sums = np.sum(exps, axis=1).reshape(-1, 1)
+  softmaxes = exps / row_exp_sums  # like scores: (N, C)
+
+  mask = np.zeros((num_train, num_classes))  # like scores: (N, C)
+  mask[np.arange(num_train), y] = 1
+
+  loss = np.sum(-np.log(softmaxes[mask.astype(bool)]))
+  dW = X.T.dot(-(mask - softmaxes))  # like W: (D, C)
+
+  loss /= num_train
+  dW /= num_train
+
+  loss += reg * np.sum(W * W)
+  dW += 2 * reg * W
   #############################################################################
   #                          END OF YOUR CODE                                 #
   #############################################################################
 
   return loss, dW
-
