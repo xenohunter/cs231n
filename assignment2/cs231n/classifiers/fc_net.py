@@ -157,7 +157,7 @@ class FullyConnectedNet(object):
       this datatype. float32 is faster but less accurate, so you should use
       float64 for numeric gradient checking.
     - seed: If not None, then pass this random seed to the dropout layers. This
-      will make the dropout layers deteriminstic so we can gradient check the
+      will make the dropout layers deterministic so we can gradient check the
       model.
     """
     self.use_batchnorm = use_batchnorm
@@ -181,11 +181,13 @@ class FullyConnectedNet(object):
     ############################################################################
     sizes = [input_dim] + hidden_dims + [num_classes]
     for i, output_size in enumerate(sizes[1:], start=1):
+      idx = str(i)
       input_size = sizes[i - 1]
-      self.params["W" + str(i)] = weight_scale * np.random.randn(input_size, output_size)
-      self.params["b" + str(i)] = np.zeros(output_size)
-
-    assert len(self.params) // 2 == self.num_layers, "Number of params doesn't match"
+      self.params["W" + idx] = weight_scale * np.random.randn(input_size, output_size)
+      self.params["b" + idx] = np.zeros(output_size)
+      if self.use_batchnorm and i < self.num_layers:
+        self.params["gamma" + idx] = np.ones((output_size,))
+        self.params["beta" + idx] = np.zeros((output_size,))
     ############################################################################
     #                             END OF YOUR CODE                             #
     ############################################################################
@@ -249,8 +251,15 @@ class FullyConnectedNet(object):
     for i in xrange(self.num_layers):
       idx = str(i + 1)
       temp, cache["affine" + idx] = affine_forward(temp, self.params["W" + idx], self.params["b" + idx])
+
       if i < self.num_layers - 1:
+        if self.use_batchnorm:
+          temp, cache["bn" + idx] = batchnorm_forward(temp,
+                                                      self.params["gamma" + idx],
+                                                      self.params["beta" + idx],
+                                                      self.bn_params[i])
         temp, cache["relu" + idx] = relu_forward(temp)
+
     scores = temp
     ############################################################################
     #                             END OF YOUR CODE                             #
@@ -284,6 +293,10 @@ class FullyConnectedNet(object):
 
       if i < self.num_layers:
         dX = relu_backward(dX, cache["relu" + idx])
+        if self.use_batchnorm:
+          dX, dgamma, dbeta = batchnorm_backward(dX, cache["bn" + idx])
+          grads["gamma" + idx] = dgamma
+          grads["beta" + idx] = dbeta
 
       dX, grads_Wn, grads_bn = affine_backward(dX, cache["affine" + idx])
       grads["W" + idx] = grads_Wn + self.reg * Wn
