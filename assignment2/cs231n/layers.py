@@ -309,18 +309,19 @@ def dropout_forward(x, dropout_param):
 
   if mode == 'train':
     ###########################################################################
-    # TODO: Implement the training phase forward pass for inverted dropout.   #
-    # Store the dropout mask in the mask variable.                            #
+    # Implement the training phase forward pass for inverted dropout. Store   #
+    # the dropout mask in the mask variable.                                  #
     ###########################################################################
-    pass
+    mask = (np.random.rand(*x.shape) > p).astype(x.dtype, copy=False)
+    out = x * mask
     ###########################################################################
     #                            END OF YOUR CODE                             #
     ###########################################################################
   elif mode == 'test':
     ###########################################################################
-    # TODO: Implement the test phase forward pass for inverted dropout.       #
+    # Implement the test phase forward pass for inverted dropout.             #
     ###########################################################################
-    pass
+    out = x
     ###########################################################################
     #                            END OF YOUR CODE                             #
     ###########################################################################
@@ -345,9 +346,9 @@ def dropout_backward(dout, cache):
   dx = None
   if mode == 'train':
     ###########################################################################
-    # TODO: Implement the training phase backward pass for inverted dropout.  #
+    # Implement the training phase backward pass for inverted dropout.        #
     ###########################################################################
-    pass
+    dx = (dout * mask).astype(dout.dtype, copy=False)
     ###########################################################################
     #                            END OF YOUR CODE                             #
     ###########################################################################

@@ -259,6 +259,8 @@ class FullyConnectedNet(object):
                                                       self.params["beta" + idx],
                                                       self.bn_params[i])
         temp, cache["relu" + idx] = relu_forward(temp)
+        if self.use_dropout:
+          temp, cache["dropout" + idx] = dropout_forward(temp, self.dropout_param)
 
     scores = temp
     ############################################################################
@@ -292,6 +294,8 @@ class FullyConnectedNet(object):
       loss += 0.5 * self.reg * np.sum(Wn * Wn)
 
       if i < self.num_layers:
+        if self.use_dropout:
+          dX = dropout_backward(dX, cache["dropout" + idx])
         dX = relu_backward(dX, cache["relu" + idx])
         if self.use_batchnorm:
           dX, dgamma, dbeta = batchnorm_backward(dX, cache["bn" + idx])
