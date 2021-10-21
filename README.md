@@ -13,6 +13,7 @@
 1. [Fully-connected Neural Network](https://github.com/xenohunter/cs231n/commit/70542f6fb3f112aec0b0d63dfa96ca2582002eca)
 2. [Batch Normalization](https://github.com/xenohunter/cs231n/commit/255ffe3c39509baf7d352a1039c52ce5a3c2a2b8)
 3. [Dropout](https://github.com/xenohunter/cs231n/commit/fd8a0ebd946a07a0618204ade27fd06746b128e3)
+4. [Convolutional Neural Network](https://github.com/xenohunter/cs231n/commit/a59854f338f9d48bb86c862c71de12dd85134f96)
 
 ## Troubleshooting
 
